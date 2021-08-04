@@ -59,12 +59,27 @@ function drawVerticalLine(x: number) {
   context.lineTo(x + 0.5, canvas.height)
   context.stroke()
 }
+let dragImageData: any;
+let isDrag = false;
+canvas.onmousedown = () => {
+  isDrag = true;
+  dragImageData = context.getImageData(0, 0, canvas.width, canvas.height);
+}
 
 canvas.onmousemove = e => {
   var loc = windowToCanvas(canvas, e.clientX, e.clientY)
-  drawBackground()
-  drawGuideLines(loc.x, loc.y)
-  updateReadout(loc.x, loc.y)
+  if (isDrag) {
+    context.putImageData(dragImageData, 0, 0);
+    drawGuideLines(loc.x, loc.y)
+    updateReadout(loc.x, loc.y)
+  }
+}
+
+canvas.onmouseup = () => {
+  isDrag = false;
+  if (dragImageData) {
+    context.putImageData(dragImageData, 0, 0);
+  }
 }
 
 drawBackground()

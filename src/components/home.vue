@@ -32,9 +32,13 @@ export default {
 <style lang="less">
 .c-header {
   height: 300px;
-  background-color: #cccccc;
+  background-image: linear-gradient( 135deg, #81FFEF 10%, #F067B4 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   .c-header-img {
-    width: 100%;
+    max-height: 100%;
+    max-width: 100%;
   }
 }
 .fit-img {

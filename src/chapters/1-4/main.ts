@@ -64,7 +64,9 @@ export function run () {
   }
   
   context.font = `${FONT_HEIGHT}px Arial`;
+  draw()
   setInterval(() => {
     draw()
-  }, 1000)
+  }, 1000);
+  (window as any).context = context
 }

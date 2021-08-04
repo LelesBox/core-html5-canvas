@@ -1,17 +1,17 @@
 <template>
   <div>
     <div id="readout"></div>
-    <canvas id="canvas" width="500" height="250">
+    <canvas id="canvas" width="800" height="550">
       Canvas Not Support
     </canvas>
   </div>
 </template>
 
 <script>
-import { run } from './run'
+import { run } from './run';
 export default {
   mounted() {
-    run()
+    run();
   }
 }
 </script>

@@ -4,6 +4,7 @@ import Chapter1_8 from './1-8/index.vue'
 import Chapter2_1 from './2-1/index.vue'
 import Chapter2_5 from './2-5/index.vue'
 import Chapter2_5_1 from './2-5-1/index.vue'
+import Chapter2_5_2 from './2-5-2/index.vue'
 
 const ChapterList: [string, any][] = [
   ['1-4', Chapter1_4],
@@ -12,6 +13,7 @@ const ChapterList: [string, any][] = [
   ['2-1', Chapter2_1],
   ['2-5', Chapter2_5],
   ['2-5-1', Chapter2_5_1],
+  ['2-5-2', Chapter2_5_2],
 ]
 
 export const Chapters: { name: string, path: string, component: any }[] = 

@@ -2,7 +2,7 @@
 <template>
   <div>
     <div id="readout"></div>
-    <canvas id="canvas" width="800" height="550">
+    <canvas id="canvas" width="1000" height="750">
       Canvas Not Support
     </canvas>
   </div>

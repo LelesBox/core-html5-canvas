@@ -3,8 +3,13 @@ export function run() {
   var context = canvas.getContext('2d')!
   function drawTwoArcs() {
     context.beginPath();
-    context.arc(720, 320, 150, 0, Math.PI * 2, false);
-    context.arc(720, 320, 100, 0, Math.PI * 2, true);
+    // context.arc(720, 320, 150, 0, Math.PI * 2, true);
+    context.rect(570, 170, 150, 150);
+    context.stroke();
+    // context.fill();
+    // context.beginPath()
+    context.arc(720, 320, 100, 0, Math.PI * 2, false);
+    context.stroke();
     context.fill();
     context.shadowOffsetX = 0;
     context.shadowOffsetY = 0;

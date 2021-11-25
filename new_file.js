@@ -43,7 +43,14 @@ export default {
   }
 </style>
 `
-const runTemplate = `export function run() {
+const runTemplate = 
+`function $<T>(selector: string) {
+  return document.querySelector(selector) as T | null;
+}
+function $$<T extends Element>(selector: string) {
+  return document.querySelectorAll(selector) as NodeListOf<T>;
+}
+export function run() {
   var canvas = document.getElementById('canvas') as HTMLCanvasElement
   var context = canvas.getContext('2d')!
   console.log('hello world')
@@ -62,7 +69,7 @@ ${directory.map(dir => `  ['${dir}', Chapter${dir.replace(/-/g, '_')}],`).join('
   const end = `export const Chapters: { name: string, path: string, component: any }[] = 
 ChapterList.map(c => ({
   name: c[0],
-  path: \`/\${c[0]}\`,
+  path: \`/\${c[0].slice(0, c[0].lastIndexOf('_'))}\`,
   component: c[1],
 }));`
   const template = [imports, ChapterList, end].join('\n\n');

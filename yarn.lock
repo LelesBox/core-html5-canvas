@@ -7810,6 +7810,11 @@ timsort@^0.3.0:
   resolved "https://registry.nlark.com/timsort/download/timsort-0.3.0.tgz#405411a8e7e6339fe64db9a234de11dc31e02bd4"
   integrity sha1-QFQRqOfmM5/mTbmiNN4R3DHgK9Q=
 
+tiny-pinyin@^1.3.2:
+  version "1.3.2"
+  resolved "https://r.cnpmjs.org/tiny-pinyin/download/tiny-pinyin-1.3.2.tgz#ce31f0f3afc2a80ee9df708fc7f4e914854d534a"
+  integrity sha1-zjHw86/CqA7p33CPx/TpFIVNU0o=
+
 tmp@^0.0.33:
   version "0.0.33"
   resolved "https://registry.nlark.com/tmp/download/tmp-0.0.33.tgz?cache=0&sync_timestamp=1618847042301&other_urls=https%3A%2F%2Fregistry.nlark.com%2Ftmp%2Fdownload%2Ftmp-0.0.33.tgz#6d34335889768d21b2bcda0aa277ced3b1bfadf9"

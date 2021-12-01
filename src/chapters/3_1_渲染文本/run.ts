@@ -8,9 +8,9 @@ function $$<T extends Element>(selector: string) {
 export function run() {
   var canvas = document.getElementById("canvas") as HTMLCanvasElement;
   var context = canvas.getContext("2d")!;
-  const fillCheckbox = $<HTMLInputElement>("#fillCheckbox");
-  const strokeCheckbox = $<HTMLInputElement>("#strokeCheckbox");
-  const shadowCheckbox = $<HTMLInputElement>("#shadowCheckbox");
+  const fillCheckbox = $<HTMLInputElement>("#fillCheckbox")!;
+  const strokeCheckbox = $<HTMLInputElement>("#strokeCheckbox")!;
+  const shadowCheckbox = $<HTMLInputElement>("#shadowCheckbox")!;
   const text = "HTML5";
 
   function draw() {
@@ -39,9 +39,43 @@ export function run() {
       context.stroke();
       i -= STEP_Y;
     }
+
+    context.strokeStyle = 'rgba(100, 0, 0, .3)';
+    context.lineWidth = 1;
+    context.beginPath();
+    context.moveTo(LEFT_MARGIN, 0);
+    context.lineTo(LEFT_MARGIN, context.canvas.height);
+    context.stroke();
   }
-  function turnShadowsOn() {}
-  function turnShadowsOff() {}
-  function drawText() {}
+  function turnShadowsOn() {
+    context.shadowColor = 'rgba(0,0,0,.8)';
+    context.shadowOffsetX = 5;
+    context.shadowOffsetY = 5;
+    context.shadowBlur  = 10;
+  }
+  function turnShadowsOff() {
+    context.shadowColor = '';
+    context.shadowOffsetX = 0;
+    context.shadowOffsetY = 0;
+    context.shadowBlur = 0;
+  }
+  function drawText() {
+    const TEXT_X = 65;
+    const TEXT_Y = canvas.height / 2 + 35;
+    context.strokeStyle = 'blue';
+    if (fillCheckbox.checked) {
+      context.fillText(text, TEXT_X, TEXT_Y);
+    }
+    if (strokeCheckbox.checked) {
+      context.strokeText(text, TEXT_X, TEXT_Y);
+    }
+  }
+  fillCheckbox.onchange = draw;
+  strokeCheckbox.onchange = draw;
+  shadowCheckbox.onchange = draw;
+  context.font = '128px Palatino';
+  context.lineWidth = 1.0;
+  context.fillStyle = 'cornflowerblue';
+  turnShadowsOn();
   draw();
 }

@@ -10,6 +10,7 @@ import Chapter2_7_2_剪纸效果 from './2-7_2_剪纸效果/index.vue'
 import Chapter2_7_路径描边填充 from './2-7_路径描边填充/index.vue'
 import Chapter3_1_渲染文本 from './3_1_渲染文本/index.vue'
 import Chapter3_2_渲染文本_渐变 from './3_2_渲染文本_渐变/index.vue'
+import Chapter3_3_渲染文本_字体 from './3_3_渲染文本_字体/index.vue'
 
 const ChapterList: [string, any][] = [
   ['1-4', Chapter1_4],
@@ -24,6 +25,7 @@ const ChapterList: [string, any][] = [
   ['2-7_路径描边填充', Chapter2_7_路径描边填充],
   ['3_1_渲染文本', Chapter3_1_渲染文本],
   ['3_2_渲染文本_渐变', Chapter3_2_渲染文本_渐变],
+  ['3_3_渲染文本_字体', Chapter3_3_渲染文本_字体],
 ]
 
 export const Chapters: { name: string, path: string, component: any }[] = 

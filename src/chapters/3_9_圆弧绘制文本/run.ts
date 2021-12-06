@@ -33,6 +33,18 @@ export function run() {
 
     while(index  < text.length) {
       character = text.charAt(index);
+      context.save();
+      context.beginPath();
+      context.translate(circle.x + Math.cos(angle) * radius, circle.y - Math.sin(angle) * radius);
+      context.rotate(Math.PI / 2 - angle);
+      context.fillText(character, 0, 0);
+      context.strokeText(character, 0, 0);
+      angle -= angleDecrement;
+      index++;
+      context.restore()
     }
+    context.restore();
   }
+  
+  drawCircularText('Clockwise around the circle', Math.PI * 2, Math.PI / 8);
 }

@@ -61,7 +61,21 @@ const root = path.resolve(__dirname, './src');
 function buildRoutTemplate() {
   let directory = fs.readdirSync(path.join(root, './chapters'));
   directory = directory.filter(dir => dir !== 'index.ts');
-  const imports = directory.map(dir => `import Chapter${dir.replace(/-/g, '_')} from './${dir}/index.vue'`).join('\n')
+  directory.sort((a, b) => {
+    const aSplit = a.split(/-|_/);
+    const bSplit = b.split(/-|_/);
+    const length = Math.max(aSplit.length, bSplit.length);
+    for (let i = 0; i < length; i++) {
+      const aItem = aSplit[i];
+      const bItem = bSplit[i];
+      if (aItem === bItem) continue;
+      if (/^\d+$/g.test(aItem) && /^\d+$/g.test(bItem)) {
+        return Number(aItem) - Number(bItem);
+      }
+      return aItem < bItem;
+    }
+  })
+  const imports = directory.map((dir, idx) => `import Chapter${dir.replace(/-/g, '_')} from './${dir}/index.vue'`).join('\n')
   const ChapterList = 
 `const ChapterList: [string, any][] = [
 ${directory.map(dir => `  ['${dir}', Chapter${dir.replace(/-/g, '_')}],`).join('\n')}

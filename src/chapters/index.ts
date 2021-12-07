@@ -15,6 +15,7 @@ import Chapter3_4_渲染文本_定位 from './3_4_渲染文本-定位/index.vue'
 import Chapter3_7_坐标轴文本 from './3_7_坐标轴文本/index.vue'
 import Chapter3_9_圆弧绘制文本 from './3_9_圆弧绘制文本/index.vue'
 import Chapter3_10_文本光标 from './3_10_文本光标/index.vue'
+import Chapter3_16_文本编辑器 from './3_16_文本编辑器/index.vue'
 
 const ChapterList: [string, any][] = [
   ['1-4', Chapter1_4],
@@ -34,6 +35,7 @@ const ChapterList: [string, any][] = [
   ['3_7_坐标轴文本', Chapter3_7_坐标轴文本],
   ['3_9_圆弧绘制文本', Chapter3_9_圆弧绘制文本],
   ['3_10_文本光标', Chapter3_10_文本光标],
+  ['3_16_文本编辑器', Chapter3_16_文本编辑器],
 ]
 
 export const Chapters: { name: string, path: string, component: any }[] = 

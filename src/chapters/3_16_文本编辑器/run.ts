@@ -1,3 +1,5 @@
+import { Paragraph } from './p';
+
 function $<T>(selector: string) {
   return document.querySelector(selector) as T | null;
 }
@@ -7,7 +9,7 @@ function $$<T extends Element>(selector: string) {
 export function run() {
   var canvas = document.getElementById("canvas") as HTMLCanvasElement;
   var context = canvas.getContext("2d")!;
-  console.log("hello world");
+  (window as any).context = context;
   const fontSelect = $<HTMLSelectElement>("#fontSelect")!;
   const sizeSelect = $<HTMLSelectElement>("#sizeSelect")!;
   const strokeStyleSelect = $<HTMLSelectElement>("#strokeStyleSelect")!;
@@ -17,6 +19,7 @@ export function run() {
   const GRID_VERTICAL_SPACING = 10;
   const cursor = new TextCursor(context);
   let line: TextLine;
+  let paragraph: Paragraph;
   let blinkInterval: number;
   let drawingSurfaceImageData: ImageData;
   const BLINK_TIME = 1000;
@@ -25,8 +28,8 @@ export function run() {
   function windowToCanvas(x: number, y: number) {
     const box = canvas.getBoundingClientRect();
     return {
-      x: x - box.left * (canvas.width / box.width),
-      y: y - box.top * (canvas.height / box.height),
+      x: Math.floor(x - box.left * (canvas.width / box.width)),
+      y: Math.floor(y - box.top * (canvas.height / box.height)),
     };
   }
 
@@ -58,17 +61,33 @@ export function run() {
   function moveCursor(x: number, y: number) {
     cursor.erase(drawingSurfaceImageData)
     saveDrawingSurface();
-    context.putImageData(drawingSurfaceImageData, 0, 0);
+    // context.putImageData(drawingSurfaceImageData, 0, 0);
     cursor.draw(x, y);
     blinkCursor(x, y);
   }
 
   canvas.onmousedown = e => {
     const loc = windowToCanvas(e.clientX, e.clientY);
-    let fontHeight = context.measureText('W').width;
-    fontHeight += fontHeight / 6;
-    line = new TextLine(context, loc.x, loc.y);
-    moveCursor(loc.x, loc.y);
+    let fontHeight;
+    // let fontHeight = Math.floor(context.measureText('W').width);
+    // fontHeight += Math.floor(fontHeight / 6);
+    // line = new TextLine(context, loc.x, loc.y);
+    // moveCursor(loc.x, loc.y);
+    cursor.erase(drawingSurfaceImageData);
+    saveDrawingSurface();
+    if (paragraph && paragraph.isPointInside(loc)) {
+      paragraph.moveCursorCloseTo(loc.x, loc.y);
+   }
+   else {
+      fontHeight = Math.floor(context.measureText('W').width),
+      fontHeight += Math.floor(fontHeight/6);
+
+      paragraph = new Paragraph(context, loc.x, loc.y - fontHeight,
+                               drawingSurfaceImageData,
+                               cursor);
+
+      paragraph.addLine(new TextLine(context, loc.x, loc.y));
+   }
   }
 
   fillStyleSelect.onchange = e => {
@@ -85,30 +104,40 @@ export function run() {
     if (e.keyCode === 8 || e.keyCode === 13) {
       e.preventDefault();
     }
-    if (e.keyCode === 8) {
-      context.save();
-      line.erase(drawingSurfaceImageData);
-      line.removeCharacterBeforeCaret();
-      moveCursor(line.left + line.getWidth(), line.bottom);
-      line.draw();
-      context.restore();
-    }
+    // if (e.keyCode === 8) {
+    //   context.save();
+    //   line.erase(drawingSurfaceImageData);
+    //   line.removeCharacterBeforeCaret();
+    //   moveCursor(line.left + line.getWidth(), line.bottom);
+    //   line.draw();
+    //   context.restore();
+    // }
+    if (e.keyCode === 8) {  // backspace
+      paragraph.backspace();
+   }
+   else if (e.keyCode === 13) { // enter
+      paragraph.newLine();
+   }
   }
 
   document.onkeypress = e => {
     const key = String.fromCharCode(e.which);
     if (e.keyCode !== 8 && !e.ctrlKey && !e.metaKey) {
       e.preventDefault();
-      context.save();
-      line.erase(drawingSurfaceImageData);
-      line.insert(key);
-      moveCursor(line.left + line.getWidth(), line.bottom);
-      context.shadowColor = 'rgba(0,0,0,.5)';
-      context.shadowOffsetX = 1;
-      context.shadowOffsetY = 1;
-      context.shadowBlur = 2;
-      line.draw();
-      context.restore();
+      // context.save();
+      // line.erase(drawingSurfaceImageData);
+      // line.insert(key);
+      // moveCursor(line.left + line.getWidth(), line.bottom);
+      // context.shadowColor = 'rgba(0,0,0,.5)';
+      // context.shadowOffsetX = 1;
+      // context.shadowOffsetY = 1;
+      // context.shadowBlur = 2;
+      // line.draw();
+      // context.restore();
+      context.fillStyle = fillStyleSelect.value;
+      context.strokeStyle = strokeStyleSelect.value;
+ 
+      paragraph.insert(key);
     }
   }
   
@@ -155,7 +184,7 @@ export function run() {
   saveDrawingSurface();
 }
 
-class TextLine {
+export class TextLine {
   text = "";
   left: number;
   bottom: number;
@@ -183,12 +212,12 @@ class TextLine {
   }
 
   getWidth() {
-    return this.context.measureText(this.text).width;
+    return Math.floor(this.context.measureText(this.text).width);
   }
 
   getHeight() {
     const h = this.context.measureText("W").width;
-    return h + h / 6;
+    return Math.floor(h + h / 6);
   }
 
   draw() {
@@ -204,9 +233,15 @@ class TextLine {
   erase(imageData: ImageData) {
     this.context.putImageData(imageData, 0, 0);
   }
+
+  getCaretX () {
+    var s = this.text.substring(0, this.caret),
+        w = Math.floor(this.context.measureText(s).width);
+    return this.left + w;
+ }
 }
 
-class TextCursor {
+export class TextCursor {
   left = 0;
   top = 0;
   width = 2;
@@ -227,7 +262,7 @@ class TextCursor {
 
   getHeight() {
     const h = this.context.measureText("W").width;
-    return h + h / 6;
+    return Math.floor(h + h / 6);
   }
 
   createPath() {

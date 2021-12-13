@@ -176,8 +176,8 @@ export class Paragraph {
         closest = x - after < before - x ? after : before;
         column = closest === before ? tmpLine.text.length + 1 : tmpLine.text.length;
         found = true;
+        return column;
       }
-      return column;
     }
   }
 

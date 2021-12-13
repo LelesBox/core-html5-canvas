@@ -69,10 +69,6 @@ export function run() {
   canvas.onmousedown = e => {
     const loc = windowToCanvas(e.clientX, e.clientY);
     let fontHeight;
-    // let fontHeight = Math.floor(context.measureText('W').width);
-    // fontHeight += Math.floor(fontHeight / 6);
-    // line = new TextLine(context, loc.x, loc.y);
-    // moveCursor(loc.x, loc.y);
     cursor.erase(drawingSurfaceImageData);
     saveDrawingSurface();
     if (paragraph && paragraph.isPointInside(loc)) {

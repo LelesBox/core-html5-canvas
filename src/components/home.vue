@@ -54,7 +54,7 @@ export default {
   }
   .c-chapter {
     width: 150px;
-    height: 150px;
+    height: 170px;
     padding: 10px 10px 20px;
     box-sizing: border-box;
     .c-chapter-item {

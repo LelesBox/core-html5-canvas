@@ -7,8 +7,6 @@ function $$<T extends Element>(selector: string) {
 export function run() {
   var canvas = document.getElementById("canvas") as HTMLCanvasElement;
   var context = canvas.getContext("2d")!;
-  // const scaleCheckbox = $<HTMLInputElement>("#scale")!;
-  console.log("hello world");
   const image = new Image();
   let scale = 1.0;
   const scaleSlider = $<HTMLInputElement>("#scaleSlider");

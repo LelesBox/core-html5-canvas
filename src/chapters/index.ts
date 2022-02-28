@@ -18,6 +18,7 @@ import Chapter3_10_文本光标 from './3_10_文本光标/index.vue'
 import Chapter3_16_文本编辑器 from './3_16_文本编辑器/index.vue'
 import Chapter4_1_图片绘制 from './4_1_图片绘制/index.vue'
 import Chapter4_6_图片水印 from './4_6_图片水印/index.vue'
+import Chapter4_9_框选图片 from './4_9_框选图片/index.vue'
 
 const ChapterList: [string, any][] = [
   ['1-4', Chapter1_4],
@@ -40,6 +41,7 @@ const ChapterList: [string, any][] = [
   ['3_16_文本编辑器', Chapter3_16_文本编辑器],
   ['4_1_图片绘制', Chapter4_1_图片绘制],
   ['4_6_图片水印', Chapter4_6_图片水印],
+  ['4_9_框选图片', Chapter4_9_框选图片],
 ]
 
 export const Chapters: { name: string, path: string, component: any }[] = 

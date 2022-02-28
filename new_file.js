@@ -45,7 +45,7 @@ export default {
 `
 const runTemplate = 
 `function $<T>(selector: string) {
-  return document.querySelector(selector) as T | null;
+  return document.querySelector(selector) as unknown as T;;
 }
 function $$<T extends Element>(selector: string) {
   return document.querySelectorAll(selector) as NodeListOf<T>;

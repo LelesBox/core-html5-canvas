@@ -24,20 +24,26 @@ export function run() {
   }
 
   function captureRubberbandPixels() {
-    imageData = context.getImageData(
-      rubberbandRectangle.left,
-      rubberbandRectangle.top,
-      rubberbandRectangle.width,
-      rubberbandRectangle.height
-    );
+    if (!imageData) {
+      imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    }
   }
 
   function restoreRubberbandPixels() {
-    imageData && context.putImageData(
-      imageData,
-      rubberbandRectangle.left,
-      rubberbandRectangle.top
-    );
+    if (imageData) {
+      const deviceWidthOverCssPixels = imageData.width / canvas.width;
+      const deviceHeightOverCssPixels = imageData.height / canvas.height;
+
+      context.putImageData(
+        imageData,
+        0,
+        0,
+        rubberbandRectangle.left,
+        rubberbandRectangle.top,
+        rubberbandRectangle.width * deviceWidthOverCssPixels,
+        rubberbandRectangle.height * deviceHeightOverCssPixels
+      );
+    }
   }
 
   function drawRubberband() {
@@ -105,35 +111,36 @@ export function run() {
     imageData = undefined;
   }
 
-  canvas.onmousedown = e => {
+  canvas.onmousedown = (e) => {
     var loc = windowToCanvas(canvas, e.clientX, e.clientY);
     e.preventDefault();
     rubberbandStart(loc.x, loc.y);
-  }
+  };
 
-  canvas.onmousemove = e => {
+  canvas.onmousemove = (e) => {
     var loc;
     if (dragging) {
       loc = windowToCanvas(canvas, e.clientX, e.clientY);
       rubberbandStretch(loc.x, loc.y);
     }
-  }
+  };
 
-  canvas.onmouseup = e => {
+  canvas.onmouseup = (e) => {
     rubberbandEnd();
-  }
+  };
 
-  image.src = "https://raw.githubusercontent.com/corehtml5canvas/code/master/ch04/example-4.1/countrypath.jpg";
+  image.src =
+    "https://raw.githubusercontent.com/corehtml5canvas/code/master/ch04/example-4.1/countrypath.jpg";
   image.crossOrigin = "Anonymous";
   image.onload = () => {
     context.drawImage(image, 0, 0, canvas.width, canvas.height);
-  }
+  };
 
   restButton.onclick = () => {
     context.clearRect(0, 0, canvas.width, canvas.height);
     context.drawImage(image, 0, 0, canvas.width, canvas.height);
-  }
+  };
 
-  context.strokeStyle = 'navy';
+  context.strokeStyle = "navy";
   context.lineWidth = 1.0;
 }

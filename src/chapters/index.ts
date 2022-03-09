@@ -19,6 +19,10 @@ import Chapter3_16_文本编辑器 from './3_16_文本编辑器/index.vue'
 import Chapter4_1_图片绘制 from './4_1_图片绘制/index.vue'
 import Chapter4_6_图片水印 from './4_6_图片水印/index.vue'
 import Chapter4_9_框选图片 from './4_9_框选图片/index.vue'
+import Chapter4_11_修改图片数据 from './4_11_修改图片数据/index.vue'
+import Chapter4_13_负片滤镜 from './4_13_负片滤镜/index.vue'
+import Chapter4_14_黑白滤镜 from './4_14_黑白滤镜/index.vue'
+import Chapter4_15_浮雕滤镜 from './4_15_浮雕滤镜/index.vue'
 
 const ChapterList: [string, any][] = [
   ['1-4', Chapter1_4],
@@ -42,6 +46,10 @@ const ChapterList: [string, any][] = [
   ['4_1_图片绘制', Chapter4_1_图片绘制],
   ['4_6_图片水印', Chapter4_6_图片水印],
   ['4_9_框选图片', Chapter4_9_框选图片],
+  ['4_11_修改图片数据', Chapter4_11_修改图片数据],
+  ['4_13_负片滤镜', Chapter4_13_负片滤镜],
+  ['4_14_黑白滤镜', Chapter4_14_黑白滤镜],
+  ['4_15_浮雕滤镜', Chapter4_15_浮雕滤镜],
 ]
 
 export const Chapters: { name: string, path: string, component: any }[] = 

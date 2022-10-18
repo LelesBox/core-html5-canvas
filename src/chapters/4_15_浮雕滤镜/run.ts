@@ -1,3 +1,5 @@
+import Worker from './test.worker';
+
 function $<T>(selector: string) {
   return document.querySelector(selector) as unknown as T;;
 }
@@ -5,6 +7,12 @@ function $$<T extends Element>(selector: string) {
   return document.querySelectorAll(selector) as NodeListOf<T>;
 }
 export function run() {
+  const worker = new Worker();
+  console.info('worker', worker);
+  worker.onmessage = (e: any) => {
+    console.info('worker message', e);
+  }
+  worker.postMessage({ a: 10 });
   var canvas = document.getElementById('canvas') as HTMLCanvasElement
   var context = canvas.getContext('2d')!
   console.log('hello world')

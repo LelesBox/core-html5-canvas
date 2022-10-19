@@ -1,37 +1,39 @@
+import { text } from "./text";
+
 function $<T>(selector: string) {
-  return document.querySelector(selector) as unknown as T;
+  return (document.querySelector(selector) as unknown) as T;
 }
 function $$<T extends Element>(selector: string) {
   return document.querySelectorAll(selector) as NodeListOf<T>;
 }
 export function run() {
-  var canvas = document.getElementById('canvas') as HTMLCanvasElement
-  var context = canvas.getContext('2d')!
+  var canvas = document.getElementById("canvas") as HTMLCanvasElement;
+  var context = canvas.getContext("2d")!;
   // console.log('hello world')
-  const w = context.measureText('123').width
+  // const w = context.measureText("123").width;
   renderHighDPI(canvas, context);
-  renderGrid(context);
-  renderText(context);
+  // renderGrid(context);
+  // renderText(context);
   renderText2(context);
 }
 
 function renderGrid(context: CanvasRenderingContext2D) {
   // 画横线
-  const step =  10;
+  const step = 10;
   let xIndex = 9.5;
   let yIndex = 9.5;
   const height = 600.5;
   const width = 1000.5;
   context.lineWidth = 1;
-  context.strokeStyle = '#ccc';
+  context.strokeStyle = "#ccc";
   for (; xIndex < width; xIndex += step) {
     context.beginPath();
     context.moveTo(xIndex, 0);
     context.lineTo(xIndex, height);
-    if ((xIndex -  0.5 + 1) % 100 === 0) {
-      context.strokeStyle = 'rgba(255,0,0,0.5)';
+    if ((xIndex - 0.5 + 1) % 100 === 0) {
+      context.strokeStyle = "rgba(255,0,0,0.5)";
     } else {
-      context.strokeStyle = '#ccc';
+      context.strokeStyle = "#ccc";
     }
     context.stroke();
   }
@@ -39,10 +41,10 @@ function renderGrid(context: CanvasRenderingContext2D) {
     context.beginPath();
     context.moveTo(0, yIndex);
     context.lineTo(width, yIndex);
-    if ((yIndex -  0.5 + 1) % 100 === 0) {
-      context.strokeStyle = 'rgba(255,0,0,0.5)';
+    if ((yIndex - 0.5 + 1) % 100 === 0) {
+      context.strokeStyle = "rgba(255,0,0,0.5)";
     } else {
-      context.strokeStyle = '#ccc';
+      context.strokeStyle = "#ccc";
     }
     context.stroke();
   }
@@ -50,17 +52,19 @@ function renderGrid(context: CanvasRenderingContext2D) {
 
 function renderText(context: CanvasRenderingContext2D) {
   // const text = 'google darling';
-  const text = 'XHello world';
-  context.font = '16px palatino';
-  context.textAlign = 'start';
-  context.textBaseline = 'alphabetic';
+  const text = "XHello world";
+  context.font = "16px palatino";
+  context.textAlign = "start";
+  context.textBaseline = "alphabetic";
   context.fillText(text, 100, 100);
   const m = context.measureText(text);
-  console.info('m', m);
+  console.info("m", m);
 }
 
-
-function renderHighDPI(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
+function renderHighDPI(
+  canvas: HTMLCanvasElement,
+  context: CanvasRenderingContext2D
+) {
   const devicePixelRatio = window.devicePixelRatio;
   if (devicePixelRatio > 1) {
     const originHeight = canvas.height;
@@ -74,31 +78,83 @@ function renderHighDPI(canvas: HTMLCanvasElement, context: CanvasRenderingContex
 
 function renderText2(context: CanvasRenderingContext2D) {
   const textBlock = new TextBlock();
-  textBlock.formText('darling 你还欠我一个拥抱，眼泪不断往下掉，this is my love story');
-  console.info(textBlock);
+  // textBlock.formText(
+  //   `darling 你还欠我一个拥抱，眼泪不断往下掉，this is my love story，让我孤独的时候赶走烦恼。我国与中东地区首例大熊猫保护研究合作之旅正式启动】18日，大熊猫“四海”“京京”从四川启程、乘坐专机前往卡塔尔，
+  //    标志着我国与中东地区首例大熊猫保护研究合作之旅正式启动。根据最新消息，目前专机已经抵达卡塔尔首都多哈。为迎接“四海”“京京”的到来，卡塔尔政府精心建`
+  // );
+  textBlock.formText(text);
+  const time = Date.now();
+  textBlock.layout(context, {
+    x: 100,
+    y: 100,
+    width: 800,
+  });
+  console.info(textBlock, 'cost time', Date.now() - time);
 }
 
 class TextBlock {
   style: Style = new Style();
   sizeChangeHandler: Array<(newHeight: number, oldHeigh: number) => void> = [];
-  content: Text[] = [   ];
-  lines: Text[] = [];
+  content: Text[] = [];
+  lines: Text[][] = [[]];
   height: number = 0;
   onSizeChange = (fn: (newHeight: number, oldHeigh: number) => void) => {
     this.sizeChangeHandler.push(fn);
-  }
+  };
   render(context: CanvasRenderingContext2D) {
-    // 
+    //
   }
 
-  fromObject(data: {}) {
+  fromObject(data: {}) {}
 
-  }
+  layout(
+    context: CanvasRenderingContext2D,
+    position: {
+      x: number;
+      y: number;
+      width: number;
+    }
+  ) {
+    // 计算所有 text 的宽高
+    this.content.forEach((text) => {
+      text.calSize(context);
+    });
 
-  layout(position: {
-    x: number; y: number; maxWidth: number;
-  }) {
+    let lastStyle: Style | undefined = undefined;
+    /* 生成 lines */
+    let stepX = 0;
+    this.content.forEach((text) => {
+      stepX += text.width;
+      if (stepX > position.width || text.text === '\n') {
+        this.lines[this.lines.length] = [text];
+        stepX = text.width;
+      }  else {
+        this.lines[this.lines.length - 1].push(text);
+      }
+    });
+    /* 根据所在行，设置每一行的高度 */
+    const lineHeights = this.lines.map((line) =>
+      line.reduce((p, n) => Math.max(p, n.height), 0)
+    );
 
+    // 渲染文本
+    let startX = position.x;
+    let startY = position.y;
+    this.lines.forEach((line, lineIndex) => {
+      line.forEach((text) => {
+        text.content.forEach((char) => {
+          char.style.setStyle(context, lastStyle);
+          context.fillText(char.content, startX, startY);
+          startX += char.width;
+          lastStyle = char.style;
+        });
+      });
+      startY += lineHeights[lineIndex] * 1.5;
+      startX = position.x;
+    });
+
+    // 下一步，支持滚动
+    // 下下一步，支持编辑输入
   }
 
   formText(data: string) {
@@ -106,17 +162,18 @@ class TextBlock {
     let textIndex = 0;
     texts.forEach((text, tIndex) => {
       textIndex += text.length + 1;
-      const lastCharacter = data[textIndex - 1] ? data[textIndex - 1] : '';
+      const lastCharacter = data[textIndex - 1] ? data[textIndex - 1] : "";
       /* 如果 text 不是纯英文或者数字，则需要拆成 text，这样换行的时候，他们不作为整体换行 */
+      // TODO: 识别连续英文，单独分隔
       if (!/^[a-zA-Z0-9]+$/g.test(text)) {
         /* 如果是符号后面跟着英文，则需要拆分 */
-        text.split('').forEach((sText) => {
+        text.split("").forEach((sText) => {
           const sTextInstance = new Text();
           sTextInstance.text = sText;
           const charInstance = new Character(sText);
           sTextInstance.content.push(charInstance);
           this.content.push(sTextInstance);
-        })
+        });
         if (lastCharacter) {
           const sTextInstance = new Text();
           sTextInstance.text = lastCharacter;
@@ -127,46 +184,49 @@ class TextBlock {
       } else {
         const textInstance = new Text();
         textInstance.text = text + lastCharacter;
-        text.split('').forEach((character) => {
+        text.split("").forEach((character) => {
           const charInstance = new Character(character);
           textInstance.content.push(charInstance);
-        })
+        });
         if (lastCharacter) {
           const charInstance = new Character(lastCharacter);
           textInstance.content.push(charInstance);
         }
         this.content.push(textInstance);
       }
-    })
-    // if (this.content[this.content.length - 1].last.content === ' ') {
-    //   this.content[this.content.length - 1].content.pop();
-    //   this.content[this.content.length - 1].text = this.content[this.content.length - 1].text.trim();
-    // }
+    });
   }
 }
 
 class Text {
   index: number = 0;
-  text: string = '';
+  text: string = "";
   content: Character[] = [];
   style: Style = new Style();
-  get width () {
-    return this.content.reduce((p, n) => p += n.width, 0)
+  get width() {
+    return this.content.reduce((p, n) => (p += n.width), 0);
   }
   get height() {
-    if (this.content.length > 0) {
-      return this.content[0].height;
-    }
-    return 0;
+    let maxHeight = 0;
+    this.content.forEach((char) => {
+      maxHeight = Math.max(char.height, maxHeight);
+    });
+    return maxHeight;
   }
-  
+
   get last() {
     return this.content[this.content.length - 1];
   }
 
-  render() {
-
+  calSize(context: CanvasRenderingContext2D) {
+    this.content.forEach((char) => {
+      char.calSize(context);
+    });
   }
+
+  layout() {}
+
+  render() {}
 }
 
 class Character {
@@ -179,24 +239,37 @@ class Character {
     x: number;
     y: number;
   } = {
-    x: 0, y: 0,
-  }
+    x: 0,
+    y: 0,
+  };
   constructor(content: string) {
     this.content = content;
   }
 
-  layout() {
-    // 
+  calSize(context: CanvasRenderingContext2D) {
+    if (this.content === '\n') {
+      this.width = 0;
+    } else {
+      this.style.setStyle(context);
+      const textMetric = context.measureText(this.content);
+      this.width = textMetric.width;
+      this.height =
+        textMetric.fontBoundingBoxAscent + textMetric.fontBoundingBoxDescent;
+    }
   }
 
-  get isBreak () {
-    return this.content === '\n';
+  layout() {
+    //
+  }
+
+  get isBreak() {
+    return this.content === "\n";
   }
 
   get isBlank() {
-    return this.content === ' ';
+    return this.content === " ";
   }
-  
+
   render(context: CanvasRenderingContext2D) {
     if (this.isBreak) {
       return;
@@ -210,23 +283,46 @@ class Style {
   layout: {
     fontSize: number;
     lineHeight: number;
+    fontFamily: string;
   } = {
-    fontSize: 16,
-    lineHeight: 1.5
-  }
+    fontSize: 12,
+    lineHeight: 1.5,
+    fontFamily: "palatino",
+  };
   paint: {
     color: string;
     bgColor: string;
   } = {
-    color: '#000',
-    bgColor: '#fff'
+    color: "#000",
+    bgColor: "#fff",
+  };
+
+  setStyle(context: CanvasRenderingContext2D, lastStyle?: Style) {
+    if (!lastStyle || !this.isEqual(lastStyle)) {
+      context.font = `${this.layout.fontSize}px ${this.layout.fontFamily}`;
+      context.strokeStyle = `${this.paint.color}`;
+    }
   }
 
-  needReflow(fontSize: number, lineHeight: number) {
-    return this.layout.fontSize !== fontSize || this.layout.lineHeight !== lineHeight;
+  needReflow(fontSize: number, lineHeight: number, fontFamily: string) {
+    return (
+      this.layout.fontSize !== fontSize ||
+      this.layout.lineHeight !== lineHeight ||
+      this.layout.fontFamily !== fontFamily
+    );
   }
 
   needRepaint(color: string, bgColor: string) {
     return this.paint.bgColor !== bgColor || this.paint.color !== color;
+  }
+
+  isEqual(style: Style) {
+    return (
+      this.needReflow(
+        style.layout.fontSize,
+        style.layout.lineHeight,
+        style.layout.fontFamily
+      ) || this.needRepaint(style.paint.color, style.paint.bgColor)
+    );
   }
 }

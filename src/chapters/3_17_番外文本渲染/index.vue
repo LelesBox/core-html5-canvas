@@ -4,7 +4,7 @@
     <div id="readout">
       <span style="font-size:16px; font-family:palatino">XHello world</span>
     </div>
-    <canvas id="canvas" width="1000" height="600">
+    <canvas id="canvas" width="1000" height="800">
       Canvas Not Support
     </canvas>
   </div>

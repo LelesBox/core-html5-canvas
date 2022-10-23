@@ -9,7 +9,7 @@ function $$<T extends Element>(selector: string) {
 export function run() {
   var canvas = document.getElementById("canvas") as HTMLCanvasElement;
   const tongZhou = new TZ(canvas);
-  tongZhou.renderGrid();
+  // tongZhou.renderGrid();
   tongZhou.renderText();
   (window as any).tz = tongZhou;
   // var context = canvas.getContext("2d")!;
@@ -59,7 +59,7 @@ function renderText(context: CanvasRenderingContext2D) {
   const text = "XHello world";
   context.font = "16px palatino";
   context.textAlign = "start";
-  context.textBaseline = "alphabetic";
+  context.textBaseline = "bottom";
   context.fillText(text, 100, 100);
   const m = context.measureText(text);
   console.info("m", m);
@@ -83,7 +83,6 @@ function renderHighDPI(
 function renderText2(context: CanvasRenderingContext2D) {
   const textBlock = new TextBlock();
   textBlock.ratio = window.devicePixelRatio;
-  (window as any).move = (y: number) => textBlock.move(context, y);
   // textBlock.formText(
   //   `darling 你还欠我一个拥抱，眼泪不断往下掉，this is my love story，让我孤独的时候赶走烦恼。我国与中东地区首例大熊猫保护研究合作之旅正式启动】18日，大熊猫“四海”“京京”从四川启程、乘坐专机前往卡塔尔，
   //    标志着我国与中东地区首例大熊猫保护研究合作之旅正式启动。根据最新消息，目前专机已经抵达卡塔尔首都多哈。为迎接“四海”“京京”的到来，卡塔尔政府精心建`
@@ -120,6 +119,7 @@ class TZ {
   context: CanvasRenderingContext2D;
   canvas: HTMLCanvasElement;
   cacheContext: CanvasRenderingContext2D;
+  blocks: TextBlock[] = [];
   ratio: number = 1;
   constructor(canvas: HTMLCanvasElement) {
     this.ratio = window.devicePixelRatio;
@@ -127,12 +127,18 @@ class TZ {
     this.context = canvas.getContext("2d")!;
     this.renderHighDPI(canvas, this.context);
     this.cacheContext = this.initOffScreen(canvas);
+    // "alphabetic" | "bottom" | "hanging" | "ideographic" | "middle" | "top"
+    this.context.textAlign = "start";
+    this.context.textBaseline = "top";
+    this.cacheContext.textAlign = "start";
+    this.cacheContext.textBaseline = "top";
+    this.renderGrid();
   }
 
   initOffScreen(copy: HTMLCanvasElement) {
     const canvas = document.createElement("canvas");
     canvas.style.position = "absolute";
-    canvas.style.left = "-9999px";
+    // canvas.style.left = "-9999px";
     document.body.appendChild(canvas);
     canvas.width = copy.width;
     canvas.height = copy.height * 2;
@@ -159,8 +165,11 @@ class TZ {
 
   renderText() {
     const textBlock = new TextBlock();
+    textBlock.cacheContext = this.cacheContext;
     textBlock.formText(text);
     const time = Date.now();
+    this.context.save();
+    this.context.translate(0, this.getFontAscent());
     textBlock.layout(this.context, {
       x: 100,
       y: 100,
@@ -173,33 +182,24 @@ class TZ {
       "length",
       text.length
     );
-    // this.cacheContext.drawImage(this.canvas, 0, 0)
-    this.cacheContext.putImageData(
-      this.context.getImageData(0, 0, this.canvas.width, 3000),
-      0,
-      0,
-      0,
-      0,
-      this.canvas.width,
-      3000
-    );
-    console.info(
-      "drawImage cost time",
-      Date.now() - time,
-      "length",
-      text.length
-    );
+    this.blocks.push(textBlock);
+    this.context.restore();
   }
 
-  move(delta: number) {
-    const imageData = this.cacheContext.getImageData(
-      0,
-      delta,
-      this.canvas.width,
-      this.canvas.height
-    );
-    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.context.putImageData(imageData, 0, 0);
+  getFontAscent() {
+    return Math.round(this.context.measureText('w').fontBoundingBoxAscent);
+  }
+
+  move(scrollTop: number) {
+    let height = 0;
+    let scrollIndex = 0;
+    for (let i = 0; i < this.blocks.length; i++) {
+      for (let j = 0; j < this.blocks[i].lines.length; j++) {
+        if (height + this.blocks[i].lines[j].height > scrollTop) {
+          scrollIndex = j
+        }
+      }
+    }
   }
 
   renderGrid() {
@@ -236,12 +236,40 @@ class TZ {
   }
 }
 
+class ScrollView {
+  width: number = 800;
+  height: number = 700;
+  padding: number = 0;
+  lines: Line[] = [];
+
+  scroll(delta: number) {
+
+  }
+
+  contents: TextBlock[] = [];
+
+  layout(position: {
+    x: number;
+    y: number;
+  }, context: CanvasRenderingContext2D) {
+    context.save();
+    // const fontAscent = Math.round(this.contents[0].lines[0][0].content[0].metric!.fontBoundingBoxAscent);
+    // context.translate(position.x, position.y + fontAscent)
+  }
+
+  render(offset: number) {
+
+  }
+}
+
 class TextBlock {
-  ratio: number = 1;
+  ratio: number = window.devicePixelRatio;
   style: Style = new Style();
+  cacheContext: CanvasRenderingContext2D | null = null;
   sizeChangeHandler: Array<(newHeight: number, oldHeigh: number) => void> = [];
   content: Text[] = [];
-  lines: Text[][] = [[]];
+  // lines: Text[][] = [[]];
+  lines: Line[] = [];
   height: number = 0;
   renderPosition: { x: number; y: number; width: number } = {
     x: 0,
@@ -261,40 +289,15 @@ class TextBlock {
     //
   }
 
-  fromObject(data: {}) {}
-
-  move(context: CanvasRenderingContext2D, delta?: number) {
-    const imageData = context.getImageData(
-      100 * this.ratio,
-      100 * this.ratio,
-      800 * this.ratio,
-      1000 * this.ratio
-    );
-    context.clearRect(
-      100 * this.ratio,
-      70 * this.ratio,
-      800 * this.ratio,
-      1000 * this.ratio
-    );
-    renderGrid(context);
-    context.putImageData(
-      imageData,
-      100 * this.ratio,
-      70 * this.ratio,
-      0,
-      0,
-      800 * this.ratio,
-      1000 * this.ratio
-    );
-  }
+  fromObject(data: {}) { }
 
   cacheBlock(context: CanvasRenderingContext2D) {
     //
   }
 
-  actualX() {}
+  actualX() { }
 
-  actualY() {}
+  actualY() { }
 
   layout(
     context: CanvasRenderingContext2D,
@@ -310,48 +313,45 @@ class TextBlock {
       text.calSize(context);
     });
 
-    let lastStyle: Style | undefined = undefined;
+    // let lastStyle: Style | undefined = undefined;
     /* 生成 lines */
     let stepX = 0;
+    this.lines[0] = new Line([], context);
     this.content.forEach((text) => {
       stepX += text.width;
       if (stepX > position.width || text.text === "\n") {
-        this.lines[this.lines.length] = [text];
+        this.lines[this.lines.length] = new Line([text], context);
         stepX = text.width;
       } else {
         this.lines[this.lines.length - 1].push(text);
       }
     });
-    /* 根据所在行，设置每一行的高度 */
-    const lineHeights = this.lines.map((line) =>
-      line.reduce((p, n) => Math.max(p, n.height), 0)
-    );
-
-    /* 计算实际 block 块所在 canvas 的矩形框 */
-    this.actualRect.x = position.x;
-    this.actualRect.y =
-      position.y - this.lines[0].reduce((p, n) => Math.max(p, n.height), 0);
-    this.actualRect.width = position.width;
-    this.actualRect.height = this.lines.reduce(
-      (p, n) => (p += n.reduce((p1, n1) => Math.max(p1, n1.height), 0)),
-      0
-    );
 
     // 渲染文本
     let startX = position.x;
     let startY = position.y;
-    this.lines.forEach((line, lineIndex) => {
-      line.forEach((text) => {
-        text.content.forEach((char) => {
-          char.style.setStyle(context, lastStyle);
-          context.fillText(char.content, startX, startY);
-          startX += char.width;
-          lastStyle = char.style;
-        });
-      });
-      startY += lineHeights[lineIndex] * 1.5;
-      startX = position.x;
-    });
+    context.save();
+    let totalHeight = 0;
+    let lastLineIndex = 0;
+    context.translate(startX, startY);
+    let stopHeight = 0;
+    for (let i = 0; i < this.lines.length; i++) {
+      const line = this.lines[i];
+      totalHeight += line.height;
+      if (totalHeight >= 600) {
+        lastLineIndex = i;
+        stopHeight = totalHeight - line.height;
+        break;
+      }
+      line.render(context);
+      context.translate(0, line.height);
+    }
+    let overflowBottom = totalHeight - 600;
+    console.info('unRenderOffset', overflowBottom, lastLineIndex);
+    if (overflowBottom > 0) {
+      this.renderLine(lastLineIndex, 0, overflowBottom, position.x, (stopHeight + position.y), context);
+    }
+    context.restore();
 
     // 下一步，支持滚动
     // 下下一步，支持编辑输入
@@ -396,6 +396,79 @@ class TextBlock {
       }
     });
   }
+
+  renderLine(index: number, start: number, bottom: number, x: number, y: number, context: CanvasRenderingContext2D) {
+    const imageData = this.getImageDataOfLineIndex(index, start, bottom);
+    if (imageData) {
+      context.putImageData(imageData, x * this.ratio, y * this.ratio);
+    }
+  }
+
+  getImageDataOfLineIndex(index: number, start: number, bottom: number) {
+    const cacheContext = this.cacheContext;
+    if (!cacheContext) {
+      return;
+    }
+    const line = this.lines[index];
+    cacheContext.clearRect(0, 0, cacheContext.canvas.width, cacheContext.canvas.height);
+    cacheContext.save();
+    cacheContext.translate(0, line.getFontAscent(this.cacheContext!))
+    line.render(cacheContext);
+    cacheContext.restore();
+    const imageData = cacheContext.getImageData(0, start * this.ratio, line.width * this.ratio, (line.height - bottom - start) * this.ratio);
+    return imageData;
+  }
+}
+
+class Line {
+  contents: Text[] = [];
+  lineHeight: number = 1.5;
+  context: CanvasRenderingContext2D;
+  constructor(texts: Text[] = [], context: CanvasRenderingContext2D) {
+    this.contents = texts;
+    this.context = context;
+  }
+
+  get boxHeight() {
+    return this.contents.reduce((p, n) => Math.max(p, n.height), 0)
+  }
+
+  get height() {
+    return Math.round(this.contents.reduce((p, n) => Math.max(p, n.height), 0)) * this.lineHeight;
+  }
+
+  get width() {
+    return this.contents.reduce((p, n) => p += n.width, 0);
+  }
+
+  getFontAscent(context?: CanvasRenderingContext2D) {
+    if (this.contents[0].content[0].metric) {
+      return this.contents[0].content[0].metric.fontBoundingBoxAscent;
+    }
+    return context!.measureText('w').fontBoundingBoxAscent;
+  }
+
+  push(text: Text) {
+    this.contents.push(text);
+  }
+
+  render(context: CanvasRenderingContext2D) {
+    let startX = 0;
+    let lastStyle: Style | undefined = undefined;
+    this.contents.forEach((text) => {
+      text.content.forEach((char) => {
+        char.style.setStyle(context, lastStyle);
+        // console.info('text pos', startX, startY, 'width - height', char.width, char.height);
+        context.fillText(char.content, startX, 0);
+        startX += char.width;
+        lastStyle = char.style;
+      });
+    });
+  }
+
+  renderSlice(top: number, bottom: number, context: CanvasRenderingContext2D) {
+
+  }
 }
 
 class Text {
@@ -424,9 +497,9 @@ class Text {
     });
   }
 
-  layout() {}
+  layout() { }
 
-  render() {}
+  render() { }
 }
 
 class Character {
@@ -435,13 +508,14 @@ class Character {
   width: number = 0;
   content: string;
   style: Style = new Style();
+  metric: TextMetrics | null = null;
   position: {
     x: number;
     y: number;
   } = {
-    x: 0,
-    y: 0,
-  };
+      x: 0,
+      y: 0,
+    };
   constructor(content: string) {
     this.content = content;
   }
@@ -452,9 +526,13 @@ class Character {
     } else {
       this.style.setStyle(context);
       const textMetric = context.measureText(this.content);
-      this.width = textMetric.width;
-      this.height =
-        textMetric.fontBoundingBoxAscent + textMetric.fontBoundingBoxDescent;
+      this.metric = textMetric;
+      this.width = Math.round(textMetric.width);
+      this.height = Math.round(
+        textMetric.fontBoundingBoxAscent + textMetric.fontBoundingBoxDescent);
+      // this.width = Math.floor(textMetric.width);
+      // this.height =Math.floor(
+      //   textMetric.fontBoundingBoxAscent + textMetric.fontBoundingBoxDescent);
     }
   }
 
@@ -485,17 +563,17 @@ class Style {
     lineHeight: number;
     fontFamily: string;
   } = {
-    fontSize: 30,
-    lineHeight: 1.5,
-    fontFamily: "palatino",
-  };
+      fontSize: 20,
+      lineHeight: 1.5,
+      fontFamily: "palatino",
+    };
   paint: {
     color: string;
     bgColor: string;
   } = {
-    color: "#000",
-    bgColor: "#fff",
-  };
+      color: "#000",
+      bgColor: "#fff",
+    };
 
   setStyle(context: CanvasRenderingContext2D, lastStyle?: Style) {
     if (!lastStyle || !this.isEqual(lastStyle)) {
